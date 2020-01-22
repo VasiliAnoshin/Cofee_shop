@@ -29,11 +29,13 @@ class AuthError(Exception):
     return the token part of the header
 '''
 def get_token_auth_header():
+    """Obtains the Access Token from the Authorization Header"""
     if 'Authorization' not in request.headers:
         raise AuthError({
-            'code': 'auth_err',
-            'description': 'Authorization does not present in request headers!'
+            'code': 'authorization_header_missing',
+            'description': 'Authorization header is expected.'
         }, 401)
+
     auth_header = request.headers['Authorization']
     header_parts = auth_header.split(' ')
     if len(header_parts) != 2:
@@ -41,11 +43,12 @@ def get_token_auth_header():
             'code': 'length_err',
             'description': 'header parts length != 2'            
         }, 401)
+
     elif header_parts[0].lower() != 'bearer':
         raise AuthError({
             {
-            'code': 'bearer_err',
-            'description': 'Does not exist bearer'            
+            'code': 'invalid_header',
+            'description': 'Authorization header must start with "Bearer".'            
         }, 401)
     token = header_parts[1]
     return token
@@ -61,7 +64,7 @@ def get_token_auth_header():
     it should raise an AuthError if the requested permission string is not in the payload permissions array
     return true otherwise
 '''
-def check_permissions(permission, payload):         'TODO: Think about following errors !!!'
+def check_permissions(permission, payload):
     if 'permissions' not in payload:
         raise AuthError({
             'code': 'invalid_claims',

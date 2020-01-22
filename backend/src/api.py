@@ -16,7 +16,7 @@ CORS(app)
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
-# db_drop_and_create_all()
+db_drop_and_create_all()
 
 ## ROUTES
 '''
@@ -107,6 +107,29 @@ def unprocessable(error):
                     }), 404
 
 '''
+@app.errorhandler(404)
+def unprocessable(error):
+    return jsonify({
+        "success": False, 
+        "error": 404,
+        "message": "resource not found"
+    }), 404
+  
+@app.errorhandler(405)
+def method_not_allowed(error):
+     return jsonify({
+         'code': 405,
+         'success': False,
+         'message': 'method not allowed'
+     }), 405
+
+@app.errorhandler(500)
+def internal_server_error(error):
+     return jsonify({
+       'code': 500,
+       'success': False,
+       'message': 'server error'
+     }), 500
 
 '''
 @TODO implement error handler for 404

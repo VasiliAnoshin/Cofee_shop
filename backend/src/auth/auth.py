@@ -4,7 +4,6 @@ from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
 
-
 AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'dev'
@@ -19,7 +18,6 @@ class AuthError(Exception):
         self.error = error
         self.status_code = status_code
 
-
 ## Auth Header
 
 '''
@@ -32,13 +30,23 @@ class AuthError(Exception):
 '''
 def get_token_auth_header():
     if 'Authorization' not in request.headers:
-        raise AuthError('Authorization does not present in request.headers')
+        raise AuthError({
+            'code': 'auth_err',
+            'description': 'Authorization does not present in request headers!'
+        }, 401)
     auth_header = request.headers['Authorization']
     header_parts = auth_header.split(' ')
     if len(header_parts) != 2:
-        raise AuthError('header parts != 2')
+        raise AuthError({
+            'code': 'length_err',
+            'description': 'header parts length != 2'            
+        }, 401)
     elif header_parts[0].lower() != 'bearer':
-        raise AuthError('Does not exist bearer')
+        raise AuthError({
+            {
+            'code': 'bearer_err',
+            'description': 'Does not exist bearer'            
+        }, 401)
     token = header_parts[1]
     return token
 
@@ -53,7 +61,7 @@ def get_token_auth_header():
     it should raise an AuthError if the requested permission string is not in the payload permissions array
     return true otherwise
 '''
-def check_permissions(permission, payload):
+def check_permissions(permission, payload):         'TODO: Think about following errors !!!'
     if 'permissions' not in payload:
         raise AuthError({
             'code': 'invalid_claims',

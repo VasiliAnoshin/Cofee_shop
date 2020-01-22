@@ -118,7 +118,7 @@ def unprocessable(error):
 @app.errorhandler(405)
 def method_not_allowed(error):
      return jsonify({
-         'code': 405,
+         'error': 405,
          'success': False,
          'message': 'method not allowed'
      }), 405
@@ -126,7 +126,7 @@ def method_not_allowed(error):
 @app.errorhandler(500)
 def internal_server_error(error):
      return jsonify({
-       'code': 500,
+       'error': 500,
        'success': False,
        'message': 'server error'
      }), 500

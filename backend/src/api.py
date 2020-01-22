@@ -30,6 +30,7 @@ db_drop_and_create_all()
 @app.route('/drinks', methods=['GET'])
 def get_drinks():
     drinks = Drink.query.all()
+    print(drinks)
     shorted_drinks = [drk.short for drk in drinks]
     if(len(shorted_drinks)==0):  
       abort(404)  
@@ -38,6 +39,18 @@ def get_drinks():
       "drinks": shorted_drinks
     })
 
+@app.route('/headers')
+def get_token_auth_header():
+    if 'Authorization' not in request.headers:
+        abort(401)
+    auth_header = request.headers['Authorization']
+    header_parts = auth_header.split(' ')
+    if len(header_parts) != 2:
+        abort(401)
+    elif header_parts[0].lower() != 'bearer':
+        abort(401)
+    token = header_parts[1]
+    return token
 
 '''
 @TODO implement endpoint
@@ -131,11 +144,13 @@ def internal_server_error(error):
        'message': 'server error'
      }), 500
 
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above 
-'''
-
+@app.errorhandler(401)
+def internal_server_error(error):
+     return jsonify({
+       'error': 401,
+       'success': False,
+       'message': 'unauthorized'
+     }), 401
 
 '''
 @TODO implement error handler for AuthError

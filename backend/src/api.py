@@ -31,26 +31,13 @@ db_drop_and_create_all()
 def get_drinks():
     drinks = Drink.query.all()
     print(drinks)
-    shorted_drinks = [drk.short for drk in drinks]
-    if(len(shorted_drinks)==0):  
-      abort(404)  
+    shorted_drinks = [drk.short() for drk in drinks]
+    #if(len(shorted_drinks)==0):  
+    #  abort(404)  
     return jsonify({ 
-      "success": True,
-      "drinks": shorted_drinks
+        "success": True,
+        "drinks": shorted_drinks
     })
-
-@app.route('/headers')
-def get_token_auth_header():
-    if 'Authorization' not in request.headers:
-        abort(401)
-    auth_header = request.headers['Authorization']
-    header_parts = auth_header.split(' ')
-    if len(header_parts) != 2:
-        abort(401)
-    elif header_parts[0].lower() != 'bearer':
-        abort(401)
-    token = header_parts[1]
-    return token
 
 '''
 @TODO implement endpoint
@@ -60,7 +47,15 @@ def get_token_auth_header():
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks-detail', methods=['GET'])
+@requires_auth('get:drinks-detail')
+def get_drinks_details(payload):
+    drinks = Drink.query.all()
+    long_drinks = [drk.long() for drk in drinks]
+    return jsonify({ 
+        "success": True,
+        "drinks": shorted_drinks
+    })
 
 '''
 @TODO implement endpoint
@@ -71,7 +66,20 @@ def get_token_auth_header():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks-detail', methods=['POST'])
+@requires_auth('post:drinks')
+def create_new_drink(drink):
+    try:   
+        rqst = request.get_json()
+        drink = Drink(title=req['title'], recipe=json.dumps(req['recipe']))
+        drink.insert()
+        return jsonify ({
+            "success": True, 
+            "drinks": drink.long()
+        })
 
+    except Exception:
+        abort(422)
 
 '''
 @TODO implement endpoint

@@ -48,7 +48,8 @@ def get_token_auth_header():
         raise AuthError({
             {
             'code': 'invalid_header',
-            'description': 'Authorization header must start with "Bearer".'            
+            'description': 'Authorization header must start with "Bearer".'      
+            }      
         }, 401)
     token = header_parts[1]
     return token

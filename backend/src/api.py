@@ -16,7 +16,7 @@ CORS(app)
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
-db_drop_and_create_all()
+# db_drop_and_create_all()
 
 ## ROUTES
 '''
@@ -29,15 +29,16 @@ db_drop_and_create_all()
 '''
 @app.route('/drinks', methods=['GET'])
 def get_drinks():
-    drinks = Drink.query.all()
-    print(drinks)
-    shorted_drinks = [drk.short() for drk in drinks]
-    #if(len(shorted_drinks)==0):  
-    #  abort(404)  
-    return jsonify({ 
-        "success": True,
-        "drinks": shorted_drinks
-    })
+    try:
+        drinks = Drink.query.all()
+        print(drinks)
+        shorted_drinks = [drk.short() for drk in drinks]
+        return jsonify({ 
+            "success": True,
+            "drinks": shorted_drinks
+        })
+    except Exception:
+        abort(422)
 
 '''
 @TODO implement endpoint
@@ -50,12 +51,15 @@ def get_drinks():
 @app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
 def get_drinks_details(payload):
-    drinks = Drink.query.all()
-    long_drinks = [drk.long() for drk in drinks]
-    return jsonify({ 
-        "success": True,
-        "drinks": shorted_drinks
-    })
+    try:
+        drinks = Drink.query.all()
+        long_drinks = [drk.long() for drk in drinks]
+        return jsonify({ 
+            "success": True,
+            "drinks": long_drinks
+        })
+    except Exception:
+        abort(422)
 
 '''
 @TODO implement endpoint
@@ -66,18 +70,17 @@ def get_drinks_details(payload):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
-@app.route('/drinks-detail', methods=['POST'])
+@app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def create_new_drink(drink):
+def create_new_drink(payload):
     try:   
         rqst = request.get_json()
-        drink = Drink(title=req['title'], recipe=json.dumps(req['recipe']))
-        drink.insert()
+        new_drink = Drink(title=rqst['title'], recipe=json.dumps(rqst['recipe']))
+        new_drink.insert()
         return jsonify ({
             "success": True, 
-            "drinks": drink.long()
+            "drinks":  [new_drink.long()]
         })
-
     except Exception:
         abort(422)
 

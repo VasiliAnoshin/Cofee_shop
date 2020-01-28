@@ -106,7 +106,13 @@ def create_new_drink(payload):
 @requires_auth('delete:drinks')
 def delete_requested_drink(payload):
     try:
-
+        id = request.GET.get('id')
+        drk = Drink.query.filter(Drink.id == id).one_or_none()
+        drk.delete()
+        return jsonify({
+            "success": True, 
+            "delete": id
+            })
     except Exception:
         abort(404)
 

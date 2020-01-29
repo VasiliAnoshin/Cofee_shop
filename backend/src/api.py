@@ -11,17 +11,17 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-# db_drop_and_create_all()
+db_drop_and_create_all()
 ## ROUTES
 @app.route('/drinks', methods=['GET'])
 def get_drinks():
     try:
         drinks = Drink.query.all()
-        print(drinks)
         shorted_drinks = [drk.short() for drk in drinks]
+        print(shorted_drinks)
         return jsonify({ 
             "success": True,
-            "drinks": shorted_drinks
+            "drinks":  shorted_drinks
         })
     except Exception:
         abort(422)
@@ -34,7 +34,7 @@ def get_drinks_details(payload):
         long_drinks = [drk.long() for drk in drinks]
         return jsonify({ 
             "success": True,
-            "drinks": long_drinks
+            "drinks": [long_drinks]
         })
     except Exception:
         abort(422)
@@ -53,34 +53,25 @@ def create_new_drink(payload):
     except Exception:
         abort(422)
 
-'''
-@TODO implement endpoint
-    PATCH /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should update the corresponding row for <id>
-        it should require the 'patch:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
-        or appropriate status code indicating reason for failure
-'''
 @app.route('/drinks/<id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
 def patch_drink(payload,id):
+    id = request.view_args['id']
+    drk = Drink.query.filter(Drink.id == id).one_or_none()
+    if not drk:
+        abort(404)
     try:
-        drk = Drink.query.filter(Drink.id == id).one_or_none()
         rqst = request.get_json()
         drk.title = rqst['title']
         if 'recipe' in rqst:
-            drink.recipe = json.dumps(req['recipe'])
-        drink.update()
+            drk.recipe = json.dumps(req['recipe'])
+        drk.update()
         return jsonify({
             'success': True,
-            'drinks': [drink.long()]
+            'drinks': [drk.long()]
         })
     except Exception:
         abort(422)
-
 
 @app.route('/drinks/<id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
@@ -95,7 +86,6 @@ def delete_requested_drink(payload,id):
             })
     except Exception:
         abort(404)
-
 
 ## Error Handling
 @app.errorhandler(422)
@@ -141,7 +131,7 @@ def internal_server_error(error):
 @app.errorhandler(AuthError)
 def internal_auth_error(error):
     return jsonify({
-       'error': error.code,
+       'error': error.error,
        'success': False,
-       'message': error.description
-     }), 401
+       'message': error.status_code
+     }), error.status_code

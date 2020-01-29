@@ -89,8 +89,22 @@ def create_new_drink(payload):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
-# @app.route('/drinks/<id>', methods=['PATCH'])
-# @requires_auth('post:drinks')
+@app.route('/drinks/<id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def patch_drink(payload,id):
+    try:
+        drk = Drink.query.filter(Drink.id == id).one_or_none()
+        rqst = request.get_json()
+        drk.title = rqst['title']
+        if 'recipe' in rqst:
+            drink.recipe = json.dumps(req['recipe'])
+        drink.update()
+        return jsonify({
+            'success': True,
+            'drinks': [drink.long()]
+        })
+    except Exception:
+        abort(422)
 
 '''
 @TODO implement endpoint
@@ -104,9 +118,9 @@ def create_new_drink(payload):
 '''
 @app.route('/drinks/<id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
-def delete_requested_drink(payload):
+def delete_requested_drink(payload,id):
     try:
-        id = request.GET.get('id')
+        id = request.view_args['id']
         drk = Drink.query.filter(Drink.id == id).one_or_none()
         drk.delete()
         return jsonify({
@@ -175,3 +189,10 @@ def internal_server_error(error):
 @TODO implement error handler for AuthError
     error handler should conform to general task above 
 '''
+@app.errorhandler(AuthError)
+def internal_auth_error(error):
+    return jsonify({
+       'error': error.code,
+       'success': False,
+       'message': error.description
+     }), 401
